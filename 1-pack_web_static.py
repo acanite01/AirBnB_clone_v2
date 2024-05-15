@@ -1,14 +1,22 @@
+#!/usr/bin/python3
+# Fabfile to generates a .tgz archive from the contents of web_static.
+import os.path
 from datetime import datetime
-from uuid import uuid4
+from fabric.api import local
 
-class MyBase:
 
-    def __init__(self):
-    # assign a few common default attributes to all instance of this class
-        self.id = str(uuid4())
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
-
-    def save_update(self):
-      # update updated_at attribute with the current date and time
-        updated_at = datetime.now()
+def do_pack():
+    """Create a tar gzipped archive of the directory web_static."""
+    dt = datetime.utcnow()
+    file = "versions/web_static_{}{}{}{}{}{}.tgz".format(dt.year,
+                                                         dt.month,
+                                                         dt.day,
+                                                         dt.hour,
+                                                         dt.minute,
+                                                         dt.second)
+    if os.path.isdir("versions") is False:
+        if local("mkdir -p versions").failed is True:
+            return None
+    if local("tar -cvzf {} web_static".format(file)).failed is True:
+        return None
+    return file
